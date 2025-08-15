@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symptom Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(20, 20, 35, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 100, 120, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3561, #1e2749);
+            color: #e0e0e0;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .disclaimer {
+            background: #3d2914;
+            border: 1px solid #8b6914;
+            color: #ffd700;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .content {
+            padding: 30px;
+            background: rgba(20, 20, 35, 0.8);
+        }
+
+        .symptom-selector {
+            margin-bottom: 30px;
+        }
+
+        .symptom-selector h3 {
+            color: #e0e0e0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .dropdown-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #404040;
+            border-radius: 10px;
+            background: #2a2a3e;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #5a67d8;
+        }
+
+        select option {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+
+        .selected-symptoms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .symptom-tag {
+            background: linear-gradient(135deg, #5a67d8, #4c51bf);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(90, 103, 216, 0.3);
+        }
+
+        .remove-symptom {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .remove-symptom:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #5a67d8, #4c51bf);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            border: 1px solid rgba(90, 103, 216, 0.3);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 103, 216, 0.4);
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .illness-card {
+            background: rgba(30, 30, 45, 0.8);
+            border: 2px solid #404040;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .illness-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .illness-card.match-high {
+            border-color: #2ed573;
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.2);
+        }
+
+        .illness-card.match-high:hover {
+            box-shadow: 0 10px 25px rgba(46, 213, 115, 0.3);
+        }
+
+        .illness-card.match-medium {
+            border-color: #ffa726;
+            box-shadow: 0 5px 15px rgba(255, 167, 38, 0.2);
+        }
+
+        .illness-card.match-medium:hover {
+            box-shadow: 0 10px 25px rgba(255, 167, 38, 0.3);
+        }
+
+        .illness-card.match-low {
+            border-color: #ff4757;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.2);
+        }
+
+        .illness-card.match-low:hover {
+            box-shadow: 0 10px 25px rgba(255, 71, 87, 0.3);
+        }
+
+        .illness-name {
+            color: #8b9dff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .match-percentage {
+            background: rgba(90, 103, 216, 0.2);
+            color: #8b9dff;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid rgba(90, 103, 216, 0.3);
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #e0e0e0;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #5a67d8;
+            padding-bottom: 5px;
+        }
+
+        .section-content {
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .treatment-item, .action-item {
+            background: rgba(40, 40, 60, 0.6);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #5a67d8;
+            color: #ffffff;
+        }
+
+        .match-high {
+            border-color: #2ed573;
+            background: rgba(46, 213, 115, 0.1);
+        }
+
+        .match-medium {
+            border-color: #ffa726;
+            background: rgba(255, 167, 38, 0.1);
+        }
+
+        .match-low {
+            border-color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        .danger-level {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .danger-low {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+            border: 1px solid #2ed573;
+        }
+
+        .danger-medium {
+            background: rgba(255, 167, 38, 0.2);
+            color: #ffa726;
+            border: 1px solid #ffa726;
+        }
+
+        .danger-high {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+        }
+
+        .priority-urgent {
+            background: rgba(255, 71, 87, 0.2) !important;
+            border-left-color: #ff4757 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
+
+        .no-results {
+            text-align: center;
+            color: #b0b0b0;
+            font-style: italic;
+            padding: 40px;
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            border: 2px solid #404040;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Medical Symptom Checker</h1>
+            <p>Select your symptoms to get possible illness matches</p>
+        </div>
+
+        <div class="disclaimer">
+            ⚠️ <strong>Important Disclaimer:</strong> This tool is for informational purposes only and should not replace professional medical advice. Always consult with a healthcare provider for proper diagnosis and treatment.
+        </div>
+
+        <div class="content">
+            <div class="symptom-selector">
+                <h3>Select Your Symptoms</h3>
+                <div class="dropdown-container">
+                    <select id="symptomSelect">
+                        <option value="">Choose a symptom...</option>
+                        <option value="fever">Fever</option>
+                        <option value="headache">Headache</option>
+                        <option value="cough">Cough</option>
+                        <option value="sore_throat">Sore Throat</option>
+                        <option value="runny_nose">Runny Nose</option>
+                        <option value="fatigue">Fatigue</option>
+                        <option value="nausea">Nausea</option>
+                        <option value="vomiting">Vomiting</option>
+                        <option value="diarrhea">Diarrhea</option>
+                        <option value="stomach_pain">Stomach Pain</option>
+                        <option value="muscle_aches">Muscle Aches</option>
+                        <option value="joint_pain">Joint Pain</option>
+                        <option value="shortness_of_breath">Shortness of Breath</option>
+                        <option value="chest_pain">Chest Pain</option>
+                        <option value="dizziness">Dizziness</option>
+                        <option value="rash">Skin Rash</option>
+                        <option value="chills">Chills</option>
+                        <option value="loss_of_appetite">Loss of Appetite</option>
+                        <option value="sneezing">Sneezing</option>
+                        <option value="congestion">Nasal Congestion</option>
+                        <option value="back_pain">Back Pain</option>
+                        <option value="neck_pain">Neck Pain</option>
+                        <option value="ear_pain">Ear Pain</option>
+                        <option value="eye_irritation">Eye Irritation</option>
+                        <option value="difficulty_swallowing">Difficulty Swallowing</option>
+                        <option value="weight_loss">Unexplained Weight Loss</option>
+                        <option value="weight_gain">Unexplained Weight Gain</option>
+                        <option value="night_sweats">Night Sweats</option>
+                        <option value="swollen_lymph_nodes">Swollen Lymph Nodes</option>
+                        <option value="irregular_heartbeat">Irregular Heartbeat</option>
+                        <option value="leg_swelling">Leg Swelling</option>
+                        <option value="difficulty_concentrating">Difficulty Concentrating</option>
+                        <option value="memory_problems">Memory Problems</option>
+                        <option value="mood_changes">Mood Changes</option>
+                        <option value="anxiety">Anxiety</option>
+                        <option value="depression">Depression</option>
+                        <option value="insomnia">Insomnia</option>
+                        <option value="excessive_thirst">Excessive Thirst</option>
+                        <option value="frequent_urination">Frequent Urination</option>
+                        <option value="blurred_vision">Blurred Vision</option>
+                        <option value="numbness_tingling">Numbness/Tingling</option>
+                        <option value="tremor">Tremor</option>
+                        <option value="seizures">Seizures</option>
+                        <option value="confusion">Confusion</option>
+                        <option value="sensitivity_to_light">Sensitivity to Light</option>
+                        <option value="sensitivity_to_sound">Sensitivity to Sound</option>
+                        <option value="hair_loss">Hair Loss</option>
+                        <option value="dry_skin">Dry Skin</option>
+                        <option value="cold_intolerance">Cold Intolerance</option>
+                        <option value="heat_intolerance">Heat Intolerance</option>
+                        <option value="excessive_sweating">Excessive Sweating</option>
+                        <option value="pale_skin">Pale Skin</option>
+                        <option value="yellowing_skin">Yellowing of Skin/Eyes</option>
+                        <option value="red_eyes">Red Eyes</option>
+                        <option value="double_vision">Double Vision</option>
+                        <option value="hearing_loss">Hearing Loss</option>
+                        <option value="tinnitus">Ringing in Ears (Tinnitus)</option>
+                        <option value="bad_breath">Bad Breath</option>
+                        <option value="metallic_taste">Metallic Taste</option>
+                        <option value="difficulty_breathing_lying_down">Difficulty Breathing When Lying Down</option>
+                        <option value="wheezing">Wheezing</option>
+                        <option value="persistent_cough">Persistent Cough</option>
+                        <option value="coughing_blood">Coughing Up Blood</option>
+                        <option value="constipation">Constipation</option>
+                        <option value="bloating">Bloating</option>
+                        <option value="heartburn">Heartburn</option>
+                        <option value="blood_in_stool">Blood in Stool</option>
+                        <option value="dark_urine">Dark Urine</option>
+                        <option value="painful_urination">Painful Urination</option>
+                        <option value="pelvic_pain">Pelvic Pain</option>
+                        <option value="irregular_periods">Irregular Periods</option>
+                        <option value="erectile_dysfunction">Erectile Dysfunction</option>
+                        <option value="decreased_libido">Decreased Libido</option>
+                        <option value="bone_pain">Bone Pain</option>
+                        <option value="stiff_joints">Stiff Joints</option>
+                        <option value="muscle_weakness">Muscle Weakness</option>
+                        <option value="muscle_cramps">Muscle Cramps</option>
+                        <option value="brittle_nails">Brittle Nails</option>
+                        <option value="slow_healing_wounds">Slow Healing Wounds</option>
+                    </select>
+                </div>
+
+                <div class="selected-symptoms" id="selectedSymptoms"></div>
+                
+                <button class="analyze-btn" onclick="analyzeSymptoms()">🔍 Analyze Symptoms</button>
+            </div>
+
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Medical database with illnesses and their associated symptoms
+        const medicalDatabase = {
+            "Common Cold": {
+                symptoms: ["runny_nose", "sneezing", "sore_throat", "cough", "congestion", "headache", "fatigue"],
+                severity: "low",
+                description: "A viral infection of the upper respiratory tract that is very common and usually mild.",
+                treatments: [
+                    "Get plenty of rest and sleep",
+                    "Drink lots of fluids (water, warm tea, broth)",
+                    "Use a humidifier or breathe steam from hot shower",
+                    "Gargle with warm salt water for sore throat",
+                    "Take over-the-counter pain relievers if needed"
+                ],
+                actions: [
+                    "Stay home to rest and avoid spreading infection",
+                    "Cover coughs and sneezes",
+                    "Wash hands frequently",
+                    "Symptoms usually resolve in 7-10 days",
+                    "See a doctor if symptoms worsen or last longer than 2 weeks"
+                ]
+            },
+            "Influenza (Flu)": {
+                symptoms: ["fever", "chills", "muscle_aches", "fatigue", "headache", "cough", "sore_throat", "runny_nose"],
+                severity: "medium",
+                description: "A viral infection that affects the respiratory system and can cause severe illness.",
+                treatments: [
+                    "Rest and get plenty of sleep",
+                    "Drink fluids to prevent dehydration",
+                    "Take antiviral medications if prescribed within 48 hours",
+                    "Use fever reducers and pain relievers as directed",
+                    "Use a humidifier for comfort"
+                ],
+                actions: [
+                    "Stay home until fever-free for 24 hours",
+                    "Seek medical attention if high fever persists",
+                    "Get medical help if breathing becomes difficult",
+                    "Contact doctor if symptoms worsen after initial improvement",
+                    "Annual flu vaccination is recommended for prevention"
+                ]
+            },
+            "COVID-19": {
+                symptoms: ["fever", "cough", "shortness_of_breath", "fatigue", "muscle_aches", "headache", "sore_throat", "loss_of_appetite", "nausea", "diarrhea"],
+                severity: "medium",
+                description: "A viral respiratory infection caused by SARS-CoV-2 that can range from mild to severe.",
+                treatments: [
+                    "Isolate to prevent spread to others",
+                    "Rest and stay hydrated",
+                    "Monitor oxygen levels if available",
+                    "Take fever reducers and pain relievers as needed",
+                    "Consider antiviral medications if prescribed early"
+                ],
+                actions: [
+                    "Isolate for recommended period based on current guidelines",
+                    "Seek immediate medical attention if breathing difficulty develops",
+                    "Monitor symptoms closely, especially in high-risk individuals",
+                    "Contact healthcare provider if symptoms worsen",
+                    "Get vaccinated and boosted as recommended"
+                ]
+            },
+            "Type 2 Diabetes": {
+                symptoms: ["excessive_thirst", "frequent_urination", "fatigue", "blurred_vision", "slow_healing_wounds", "numbness_tingling", "weight_loss"],
+                severity: "high",
+                description: "A chronic condition affecting how your body processes blood sugar (glucose).",
+                treatments: [
+                    "Follow prescribed medication regimen",
+                    "Maintain a healthy, balanced diet",
+                    "Exercise regularly as recommended",
+                    "Monitor blood sugar levels regularly",
+                    "Maintain healthy weight"
+                ],
+                actions: [
+                    "See healthcare provider regularly for monitoring",
+                    "Learn proper blood sugar monitoring techniques",
+                    "Get regular eye, foot, and kidney exams",
+                    "Seek immediate care for very high or low blood sugar",
+                    "Consider diabetes education classes"
+                ]
+            },
+            "Hypothyroidism": {
+                symptoms: ["fatigue", "weight_gain", "cold_intolerance", "dry_skin", "hair_loss", "constipation", "depression", "muscle_weakness", "memory_problems"],
+                severity: "medium",
+                description: "A condition where the thyroid gland doesn't produce enough thyroid hormones.",
+                treatments: [
+                    "Take prescribed thyroid hormone replacement medication",
+                    "Take medication on empty stomach as directed",
+                    "Maintain consistent timing of medication",
+                    "Eat a balanced diet rich in nutrients",
+                    "Get regular exercise as tolerated"
+                ],
+                actions: [
+                    "Get regular blood tests to monitor thyroid levels",
+                    "Take medication exactly as prescribed",
+                    "Inform doctor of any other medications or supplements",
+                    "Be patient as symptoms may take weeks to improve",
+                    "See endocrinologist if needed for specialized care"
+                ]
+            },
+            "Hyperthyroidism": {
+                symptoms: ["weight_loss", "irregular_heartbeat", "anxiety", "tremor", "excessive_sweating", "heat_intolerance", "insomnia", "fatigue"],
+                severity: "medium",
+                description: "A condition where the thyroid gland produces too much thyroid hormone.",
+                treatments: [
+                    "Take prescribed antithyroid medications",
+                    "Consider radioactive iodine therapy if recommended",
+                    "Use beta-blockers for symptom control if prescribed",
+                    "Avoid excessive iodine intake",
+                    "Manage stress and get adequate rest"
+                ],
+                actions: [
+                    "Regular monitoring with blood tests",
+                    "Seek immediate care for severe symptoms like chest pain",
+                    "Follow up regularly with endocrinologist",
+                    "Monitor heart rate and blood pressure",
+                    "Discuss treatment options including surgery if needed"
+                ]
+            },
+            "Depression": {
+                symptoms: ["depression", "fatigue", "insomnia", "loss_of_appetite", "difficulty_concentrating", "mood_changes", "weight_loss", "weight_gain"],
+                severity: "medium",
+                description: "A mental health condition characterized by persistent feelings of sadness and loss of interest.",
+                treatments: [
+                    "Consider psychotherapy or counseling",
+                    "Take prescribed antidepressant medications if recommended",
+                    "Maintain regular sleep schedule",
+                    "Exercise regularly, even light activity",
+                    "Practice mindfulness and stress management"
+                ],
+                actions: [
+                    "Seek professional mental health support",
+                    "Contact crisis helpline if having suicidal thoughts",
+                    "Stay connected with supportive friends and family",
+                    "Avoid alcohol and recreational drugs",
+                    "Be patient as treatment effects may take several weeks"
+                ]
+            },
+            "Anxiety Disorder": {
+                symptoms: ["anxiety", "irregular_heartbeat", "excessive_sweating", "tremor", "difficulty_concentrating", "insomnia", "muscle_aches", "fatigue"],
+                severity: "medium",
+                description: "A mental health condition characterized by excessive worry and fear that interferes with daily life.",
+                treatments: [
+                    "Practice relaxation techniques and deep breathing",
+                    "Consider cognitive behavioral therapy",
+                    "Take prescribed anti-anxiety medications if needed",
+                    "Regular exercise and physical activity",
+                    "Limit caffeine and alcohol intake"
+                ],
+                actions: [
+                    "Seek professional mental health evaluation",
+                    "Learn coping strategies and stress management",
+                    "Join support groups if helpful",
+                    "Maintain healthy lifestyle habits",
+                    "Seek immediate help if experiencing panic attacks"
+                ]
+            },
+            "Anemia": {
+                symptoms: ["fatigue", "pale_skin", "shortness_of_breath", "dizziness", "cold_intolerance", "brittle_nails", "headache", "irregular_heartbeat"],
+                severity: "medium",
+                description: "A condition where you don't have enough healthy red blood cells to carry adequate oxygen to tissues.",
+                treatments: [
+                    "Take iron supplements if iron-deficient",
+                    "Eat iron-rich foods (red meat, leafy greens, beans)",
+                    "Take vitamin C to enhance iron absorption",
+                    "Address underlying causes if identified",
+                    "Consider B12 or folate supplements if deficient"
+                ],
+                actions: [
+                    "Get blood tests to determine type and cause of anemia",
+                    "Follow up regularly to monitor response to treatment",
+                    "Seek medical evaluation for underlying conditions",
+                    "Avoid blood loss (manage heavy menstrual periods)",
+                    "Consider seeing a hematologist for severe cases"
+                ]
+            },
+            "Heart Failure": {
+                symptoms: ["shortness_of_breath", "leg_swelling", "fatigue", "difficulty_breathing_lying_down", "irregular_heartbeat", "weight_gain"],
+                severity: "high",
+                description: "A condition where the heart cannot pump blood effectively to meet the body's needs.",
+                treatments: [
+                    "Take prescribed medications (ACE inhibitors, diuretics)",
+                    "Follow low-sodium diet strictly",
+                    "Monitor daily weight and fluid intake",
+                    "Exercise as recommended by cardiologist",
+                    "Get adequate rest and sleep"
+                ],
+                actions: [
+                    "Seek immediate medical attention for worsening symptoms",
+                    "Monitor weight daily and report sudden increases",
+                    "Follow medication regimen exactly as prescribed",
+                    "Regular cardiology follow-up appointments",
+                    "Call emergency services for severe breathing difficulty"
+                ]
+            },
+            "Asthma": {
+                symptoms: ["wheezing", "shortness_of_breath", "cough", "chest_pain", "fatigue"],
+                severity: "medium",
+                description: "A respiratory condition where airways narrow and swell, making breathing difficult.",
+                treatments: [
+                    "Use prescribed inhalers (rescue and controller)",
+                    "Identify and avoid triggers",
+                    "Take allergy medications if allergic asthma",
+                    "Use peak flow meter to monitor lung function",
+                    "Keep rescue inhaler accessible at all times"
+                ],
+                actions: [
+                    "Develop asthma action plan with healthcare provider",
+                    "Seek immediate care for severe asthma attacks",
+                    "Regular follow-up with pulmonologist or primary care",
+                    "Get annual flu vaccination",
+                    "Call emergency services if rescue inhaler doesn't help"
+                ]
+            },
+            "Pneumonia": {
+                symptoms: ["fever", "cough", "shortness_of_breath", "chest_pain", "fatigue", "chills", "muscle_aches", "coughing_blood"],
+                severity: "high",
+                description: "An infection that inflames air sacs in one or both lungs, which may fill with fluid.",
+                treatments: [
+                    "Take prescribed antibiotics for bacterial pneumonia",
+                    "Get plenty of rest and sleep",
+                    "Drink lots of fluids",
+                    "Use a humidifier or breathe steam",
+                    "Take fever reducers and pain relievers as directed"
+                ],
+                actions: [
+                    "Seek immediate medical attention - pneumonia can be serious",
+                    "Call emergency services if severe breathing difficulty",
+                    "Complete the full course of antibiotics if prescribed",
+                    "Follow up with doctor as recommended",
+                    "Get vaccinated to prevent pneumonia"
+                ]
+            },
+            "Migraine": {
+                symptoms: ["headache", "nausea", "vomiting", "dizziness", "sensitivity_to_light", "sensitivity_to_sound", "fatigue"],
+                severity: "medium",
+                description: "A severe type of headache that can cause intense throbbing pain, usually on one side of the head.",
+                treatments: [
+                    "Rest in a quiet, dark room",
+                    "Apply cold or warm compress to head or neck",
+                    "Take prescribed migraine medications",
+                    "Stay hydrated",
+                    "Practice relaxation techniques"
+                ],
+                actions: [
+                    "Track triggers to avoid them in the future",
+                    "Maintain regular sleep schedule",
+                    "See a neurologist for frequent migraines",
+                    "Consider preventive medications if migraines are frequent",
+                    "Seek emergency care for sudden, severe headaches"
+                ]
+            },
+            "Gastroesophageal Reflux Disease (GERD)": {
+                symptoms: ["heartburn", "chest_pain", "difficulty_swallowing", "cough", "sore_throat", "bad_breath"],
+                severity: "medium",
+                description: "A digestive disorder where stomach acid frequently flows back into the esophagus.",
+                treatments: [
+                    "Take prescribed acid-reducing medications",
+                    "Avoid trigger foods (spicy, fatty, acidic)",
+                    "Eat smaller, more frequent meals",
+                    "Avoid lying down immediately after eating",
+                    "Elevate head of bed when sleeping"
+                ],
+                actions: [
+                    "Keep a food diary to identify triggers",
+                    "Maintain healthy weight",
+                    "Quit smoking if applicable",
+                    "See gastroenterologist for persistent symptoms",
+                    "Seek immediate care for severe chest pain"
+                ]
+            },
+            "Irritable Bowel Syndrome (IBS)": {
+                symptoms: ["stomach_pain", "bloating", "diarrhea", "constipation", "nausea", "fatigue"],
+                severity: "medium",
+                description: "A common disorder affecting the large intestine, causing cramping, bloating, and changes in bowel habits.",
+                treatments: [
+                    "Follow a low-FODMAP diet if recommended",
+                    "Take prescribed medications for symptoms",
+                    "Increase fiber intake gradually",
+                    "Manage stress through relaxation techniques",
+                    "Stay hydrated and exercise regularly"
+                ],
+                actions: [
+                    "Keep a food and symptom diary",
+                    "Work with gastroenterologist or dietitian",
+                    "Consider psychological support for stress management",
+                    "Seek medical evaluation to rule out other conditions",
+                    "Join support groups for chronic digestive conditions"
+                ]
+            },
+            "Kidney Disease": {
+                symptoms: ["fatigue", "leg_swelling", "shortness_of_breath", "nausea", "frequent_urination", "dark_urine", "muscle_cramps", "metallic_taste"],
+                severity: "high",
+                description: "A condition where kidneys are damaged and cannot filter blood as well as they should.",
+                treatments: [
+                    "Follow prescribed medications for blood pressure and diabetes",
+                    "Maintain strict dietary restrictions (protein, sodium, potassium)",
+                    "Monitor fluid intake as directed",
+                    "Take phosphate binders if prescribed",
+                    "Consider dialysis preparation if advanced"
+                ],
+                actions: [
+                    "Regular nephrology follow-up appointments",
+                    "Monitor blood pressure and blood sugar closely",
+                    "Get regular lab tests to monitor kidney function",
+                    "Prepare for renal replacement therapy if needed",
+                    "Consider kidney transplant evaluation if appropriate"
+                ]
+            },
+            "Liver Disease": {
+                symptoms: ["fatigue", "yellowing_skin", "stomach_pain", "nausea", "loss_of_appetite", "leg_swelling", "dark_urine", "pale_skin"],
+                severity: "high",
+                description: "Various conditions that damage the liver and affect its ability to function properly.",
+                treatments: [
+                    "Avoid alcohol completely",
+                    "Take prescribed medications carefully",
+                    "Follow low-sodium diet if fluid retention present",
+                    "Maintain healthy weight and diet",
+                    "Get hepatitis vaccinations if recommended"
+                ],
+                actions: [
+                    "Regular hepatology or gastroenterology follow-up",
+                    "Monitor for signs of liver failure",
+                    "Get regular blood tests to monitor liver function",
+                    "Consider liver transplant evaluation if advanced",
+                    "Avoid medications that can damage liver"
+                ]
+            },
+            "Rheumatoid Arthritis": {
+                symptoms: ["joint_pain", "stiff_joints", "fatigue", "muscle_aches", "fever", "weight_loss", "swollen_lymph_nodes"],
+                severity: "medium",
+                description: "An autoimmune disorder that primarily affects joints, causing inflammation and pain.",
+                treatments: [
+                    "Take prescribed disease-modifying antirheumatic drugs (DMARDs)",
+                    "Use anti-inflammatory medications as directed",
+                    "Apply heat and cold therapy to affected joints",
+                    "Engage in gentle exercise and physical therapy",
+                    "Maintain healthy weight to reduce joint stress"
+                ],
+                actions: [
+                    "Regular rheumatology appointments for monitoring",
+                    "Get regular blood tests to monitor disease activity",
+                    "Stay active with low-impact exercises",
+                    "Use assistive devices if needed",
+                    "Monitor for medication side effects"
+                ]
+            },
+            "Osteoarthritis": {
+                symptoms: ["joint_pain", "stiff_joints", "bone_pain", "muscle_weakness", "difficulty_concentrating"],
+                severity: "medium",
+                description: "A degenerative joint disease where cartilage breaks down, causing pain and stiffness.",
+                treatments: [
+                    "Take over-the-counter pain relievers as directed",
+                    "Apply topical pain relief creams",
+                    "Use hot and cold therapy",
+                    "Engage in low-impact exercise",
+                    "Consider physical therapy"
+                ],
+                actions: [
+                    "Maintain healthy weight to reduce joint stress",
+                    "Stay active with appropriate exercises",
+                    "Use assistive devices when needed",
+                    "Consider joint replacement surgery if severe",
+                    "Regular orthopedic follow-up if symptoms worsen"
+                ]
+            },
+            "Multiple Sclerosis": {
+                symptoms: ["fatigue", "numbness_tingling", "muscle_weakness", "difficulty_concentrating", "memory_problems", "blurred_vision", "dizziness", "mood_changes"],
+                severity: "high",
+                description: "An autoimmune disease affecting the central nervous system, causing communication problems between brain and body.",
+                treatments: [
+                    "Take prescribed disease-modifying therapies",
+                    "Use corticosteroids for relapses if prescribed",
+                    "Engage in physical and occupational therapy",
+                    "Manage symptoms with appropriate medications",
+                    "Maintain regular exercise routine as tolerated"
+                ],
+                actions: [
+                    "Regular neurology appointments for monitoring",
+                    "MRI scans to monitor disease progression",
+                    "Stay cool in hot weather to avoid symptom worsening",
+                    "Join MS support groups",
+                    "Plan for disability accommodations if needed"
+                ]
+            },
+            "Fibromyalgia": {
+                symptoms: ["muscle_aches", "joint_pain", "fatigue", "insomnia", "headache", "difficulty_concentrating", "memory_problems", "mood_changes"],
+                severity: "medium",
+                description: "A disorder characterized by widespread musculoskeletal pain accompanied by fatigue and sleep issues.",
+                treatments: [
+                    "Take prescribed medications for pain and sleep",
+                    "Engage in gentle exercise like swimming or walking",
+                    "Practice stress management and relaxation techniques",
+                    "Get adequate sleep with good sleep hygiene",
+                    "Consider cognitive behavioral therapy"
+                ],
+                actions: [
+                    "Work with rheumatologist or pain specialist",
+                    "Maintain regular, gentle exercise routine",
+                    "Pace activities to avoid overexertion",
+                    "Join fibromyalgia support groups",
+                    "Consider complementary therapies like massage"
+                ]
+            },
+            "Chronic Fatigue Syndrome": {
+                symptoms: ["fatigue", "muscle_aches", "joint_pain", "headache", "sore_throat", "swollen_lymph_nodes", "difficulty_concentrating", "memory_problems"],
+                severity: "medium",
+                description: "A complex disorder characterized by extreme fatigue that doesn't improve with rest.",
+                treatments: [
+                    "Pace activities to avoid post-exertional malaise",
+                    "Maintain consistent sleep schedule",
+                    "Take prescribed medications for symptoms",
+                    "Use gentle stretching and movement",
+                    "Consider graded exercise therapy under supervision"
+                ],
+                actions: [
+                    "Work with specialists familiar with CFS",
+                    "Keep detailed symptom diary",
+                    "Apply for disability accommodations if needed",
+                    "Join CFS support communities",
+                    "Avoid overexertion and listen to body's limits"
+                ]
+            },
+            "Sleep Apnea": {
+                symptoms: ["insomnia", "fatigue", "headache", "difficulty_concentrating", "mood_changes", "excessive_sweating", "irregular_heartbeat"],
+                severity: "medium",
+                description: "A sleep disorder where breathing repeatedly stops and starts during sleep.",
+                treatments: [
+                    "Use CPAP machine as prescribed",
+                    "Maintain healthy weight",
+                    "Sleep on side instead of back",
+                    "Avoid alcohol and sedatives before bedtime",
+                    "Consider oral appliances if recommended"
+                ],
+                actions: [
+                    "Regular follow-up with sleep medicine specialist",
+                    "Ensure proper CPAP machine maintenance and use",
+                    "Monitor for cardiovascular complications",
+                    "Consider surgery for severe cases",
+                    "Regular sleep studies to monitor treatment effectiveness"
+                ]
+            },
+            "Urinary Tract Infection (UTI)": {
+                symptoms: ["painful_urination", "frequent_urination", "dark_urine", "pelvic_pain", "fever", "nausea", "fatigue"],
+                severity: "medium",
+                description: "An infection in any part of the urinary system, most commonly affecting the bladder and urethra.",
+                treatments: [
+                    "Take prescribed antibiotics for full course",
+                    "Drink plenty of water to flush bacteria",
+                    "Use over-the-counter pain relievers for discomfort",
+                    "Apply heat pad to lower abdomen for pain relief",
+                    "Avoid irritating substances like caffeine and alcohol"
+                ],
+                actions: [
+                    "Seek prompt medical treatment to prevent kidney infection",
+                    "Complete entire antibiotic course even if feeling better",
+                    "Practice good hygiene to prevent recurrence",
+                    "Urinate after sexual activity",
+                    "Follow up if symptoms don't improve within 2-3 days"
+                ]
+            },
+            "Mononucleosis": {
+                symptoms: ["sore_throat", "fever", "fatigue", "swollen_lymph_nodes", "headache", "muscle_aches", "loss_of_appetite"],
+                severity: "medium",
+                description: "A viral infection commonly known as 'mono' or the 'kissing disease', often caused by Epstein-Barr virus.",
+                treatments: [
+                    "Get plenty of rest - may need weeks to months",
+                    "Drink lots of fluids to prevent dehydration",
+                    "Take over-the-counter pain relievers for symptoms",
+                    "Gargle with warm salt water for sore throat",
+                    "Avoid contact sports due to enlarged spleen risk"
+                ],
+                actions: [
+                    "Avoid close contact with others to prevent spread",
+                    "Stay home from work/school until fever-free",
+                    "Avoid heavy lifting and contact sports for several weeks",
+                    "See doctor if symptoms worsen or don't improve",
+                    "Be patient - recovery can take several months"
+                ]
+            },
+            "Parkinson's Disease": {
+                symptoms: ["tremor", "muscle_weakness", "stiff_joints", "difficulty_concentrating", "memory_problems", "depression", "constipation", "insomnia"],
+                severity: "high",
+                description: "A progressive nervous system disorder that affects movement, causing tremors and stiffness.",
+                treatments: [
+                    "Take prescribed dopamine medications",
+                    "Engage in regular physical therapy",
+                    "Practice speech therapy if needed",
+                    "Use occupational therapy for daily activities",
+                    "Consider deep brain stimulation if appropriate"
+                ],
+                actions: [
+                    "Regular neurology appointments for monitoring",
+                    "Stay active with exercise and physical therapy",
+                    "Make home safety modifications",
+                    "Join Parkinson's support groups",
+                    "Plan for progressive care needs"
+                ]
+            },
+            "Stroke": {
+                symptoms: ["confusion", "difficulty_concentrating", "headache", "dizziness", "numbness_tingling", "muscle_weakness", "blurred_vision", "difficulty_swallowing"],
+                severity: "high",
+                description: "A medical emergency where blood flow to part of the brain is interrupted or reduced.",
+                treatments: [
+                    "Emergency medical treatment with clot-busting drugs",
+                    "Take prescribed blood thinners",
+                    "Engage in intensive rehabilitation therapy",
+                    "Control blood pressure and cholesterol",
+                    "Take prescribed medications to prevent future strokes"
+                ],
+                actions: [
+                    "Call 911 immediately if stroke symptoms occur",
+                    "Follow stroke rehabilitation program closely",
+                    "Regular cardiology and neurology follow-up",
+                    "Make necessary home and lifestyle modifications",
+                    "Learn warning signs to prevent future strokes"
+                ]
+            },
+            "Epilepsy": {
+                symptoms: ["seizures", "confusion", "memory_problems", "headache", "fatigue", "mood_changes"],
+                severity: "high",
+                description: "A neurological disorder characterized by recurrent seizures due to abnormal electrical activity in the brain.",
+                treatments: [
+                    "Take prescribed anti-seizure medications consistently",
+                    "Maintain regular sleep schedule",
+                    "Avoid known seizure triggers",
+                    "Consider ketogenic diet if recommended",
+                    "Use seizure rescue medications if prescribed"
+                ],
+                actions: [
+                    "Regular neurology appointments for monitoring",
+                    "Wear medical alert identification",
+                    "Avoid driving until seizure-free as required by law",
+                    "Educate family/friends about seizure first aid",
+                    "Consider epilepsy surgery evaluation if medications ineffective"
+                ]
+            },
+            "Celiac Disease": {
+                symptoms: ["diarrhea", "stomach_pain", "bloating", "weight_loss", "fatigue", "nausea", "constipation", "rash"],
+                severity: "medium",
+                description: "An autoimmune disorder where ingesting gluten leads to damage in the small intestine.",
+                treatments: [
+                    "Follow strict gluten-free diet for life",
+                    "Take vitamin and mineral supplements if deficient",
+                    "Read all food labels carefully",
+                    "Use separate cooking utensils and surfaces",
+                    "Be cautious with medications and cosmetics"
+                ],
+                actions: [
+                    "Work with dietitian experienced in gluten-free diets",
+                    "Regular follow-up to monitor intestinal healing",
+                    "Get regular bone density scans",
+                    "Screen family members for celiac disease",
+                    "Join celiac disease support groups"
+                ]
+            }
+        };
+
+        let selectedSymptoms = [];
+
+        // Handle symptom selection
+        document.getElementById('symptomSelect').addEventListener('change', function() {
+            const selectedSymptom = this.value;
+            if (selectedSymptom && !selectedSymptoms.includes(selectedSymptom)) {
+                selectedSymptoms.push(selectedSymptom);
+                updateSelectedSymptoms();
+                this.value = '';
+            }
+        });
+
+        function updateSelectedSymptoms() {
+            const container = document.getElementById('selectedSymptoms');
+            container.innerHTML = '';
+            
+            selectedSymptoms.forEach(symptom => {
+                const tag = document.createElement('div');
+                tag.className = 'symptom-tag';
+                tag.innerHTML = `
+                    <span>${formatSymptomName(symptom)}</span>
+                    <button class="remove-symptom" onclick="removeSymptom('${symptom}')">×</button>
+                `;
+                container.appendChild(tag);
+            });
+        }
+
+        function removeSymptom(symptom) {
+            selectedSymptoms = selectedSymptoms.filter(s => s !== symptom);
+            updateSelectedSymptoms();
+        }
+
+        function formatSymptomName(symptom) {
+            return symptom.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function analyzeSymptoms() {
+            if (selectedSymptoms.length === 0) {
+                alert('Please select at least one symptom.');
+                return;
+            }
+
+            const results = [];
+            
+            for (const [illnessName, illnessData] of Object.entries(medicalDatabase)) {
+                const matchingSymptoms = selectedSymptoms.filter(symptom => 
+                    illnessData.symptoms.includes(symptom)
+                );
+                
+                if (matchingSymptoms.length > 0) {
+                    const matchPercentage = Math.round(
+                        (matchingSymptoms.length / selectedSymptoms.length) * 100
+                    );
+                    
+                    results.push({
+                        name: illnessName,
+                        data: illnessData,
+                        matchPercentage: matchPercentage,
+                        matchingSymptoms: matchingSymptoms
+                    });
+                }
+            }
+            
+            // Sort by match percentage (highest first)
+            results.sort((a, b) => b.matchPercentage - a.matchPercentage);
+            
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <h3>No matches found</h3>
+                        <p>Based on the selected symptoms, no specific conditions were identified. Consider consulting with a healthcare professional for proper evaluation.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsContainer.innerHTML = '<h3>Possible Conditions</h3>';
+            
+            results.forEach(result => {
+                const card = document.createElement('div');
+                
+                // Determine match level based on percentage
+                let matchLevel = 'match-low';
+                if (result.matchPercentage >= 70) {
+                    matchLevel = 'match-high';
+                } else if (result.matchPercentage >= 40) {
+                    matchLevel = 'match-medium';
+                }
+                
+                // Determine danger level display
+                const dangerLevels = {
+                    'low': { class: 'danger-low', text: 'Low Risk', emoji: '🟢' },
+                    'medium': { class: 'danger-medium', text: 'Medium Risk', emoji: '🟡' },
+                    'high': { class: 'danger-high', text: 'High Risk', emoji: '🔴' }
+                };
+                
+                const dangerInfo = dangerLevels[result.data.severity];
+                
+                card.className = `illness-card ${matchLevel}`;
+                
+                // Process actions for high-risk conditions
+                let actionsHtml = '';
+                if (result.data.severity === 'high') {
+                    actionsHtml = result.data.actions.map((action, index) => {
+                        const isUrgent = index < 2; // First 2 actions are highest priority for high-risk
+                        const className = isUrgent ? 'action-item priority-urgent' : 'action-item';
+                        return `<div class="${className}">• ${action}</div>`;
+                    }).join('');
+                } else {
+                    actionsHtml = result.data.actions.map(action => 
+                        `<div class="action-item">• ${action}</div>`
+                    ).join('');
+                }
+                
+                card.innerHTML = `
+                    <div class="illness-name">
+                        ${result.name}
+                        <span class="danger-level ${dangerInfo.class}">${dangerInfo.emoji} ${dangerInfo.text}</span>
+                    </div>
+                    <div class="match-percentage">${result.matchPercentage}% symptom match</div>
+                    
+                    <div class="section">
+                        <div class="section-title">Description</div>
+                        <div class="section-content">${result.data.description}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-title">Recommended Treatments</div>
+                        <div class="section-content">
+                            ${result.data.treatments.map(treatment => 
+                                `<div class="treatment-item">• ${treatment}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-title">What You Should Do</div>
+                        <div class="section-content">
+                            ${actionsHtml}
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
